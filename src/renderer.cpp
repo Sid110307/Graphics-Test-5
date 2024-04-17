@@ -95,13 +95,14 @@ void Renderer::renderLevel(const Level &level, const Player &player)
             continue;
         }
 
+        const Sector &currentSector = level.getSector(mapX, mapY);
         float perpWallDist = side == 0 ? (mapX - player.getPos().x + (1 - stepX) / 2) / rayDirX :
                              (mapY - player.getPos().y + (1 - stepY) / 2) / rayDirY;
         int lineHeight = SCREEN_HEIGHT / perpWallDist, drawStart = std::max(0, -lineHeight / 2 + SCREEN_HEIGHT / 2),
             drawEnd = std::min(lineHeight / 2 + SCREEN_HEIGHT / 2, SCREEN_HEIGHT - 1);
 
         glm::vec3 color;
-        switch (level.getSector(mapX, mapY).getType())
+        switch (currentSector.getType())
         {
             case SectorType::EMPTY:
                 color = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -136,11 +137,14 @@ void Renderer::renderMinimap(const Level &level, const Player &player)
     glLoadIdentity();
     glClear(GL_COLOR_BUFFER_BIT);
 
+    float minimapPosX = (SCREEN_WIDTH - level.size() * MAP_UNIT) / 2, minimapPosY = -minimapPosX;
     for (size_t x = 0; x < level.size(); ++x)
-        for (size_t y = 0; y < level.size(0); ++y)
+        for (size_t y = 0; y < level.size(x); ++y)
         {
+            const Sector &sector = level.getSector(x, y);
+
             glm::vec3 color;
-            switch (level.getSector(x, y).getType())
+            switch (sector.getType())
             {
                 case SectorType::EMPTY:
                     color = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -158,26 +162,28 @@ void Renderer::renderMinimap(const Level &level, const Player &player)
 
             glColor3f(color.r, color.g, color.b);
             glBegin(GL_QUADS);
-            glVertex2f(x * MAP_UNIT, SCREEN_HEIGHT - y * MAP_UNIT);
-            glVertex2f((x + 1) * MAP_UNIT, SCREEN_HEIGHT - y * MAP_UNIT);
-            glVertex2f((x + 1) * MAP_UNIT, SCREEN_HEIGHT - (y + 1) * MAP_UNIT);
-            glVertex2f(x * MAP_UNIT, SCREEN_HEIGHT - (y + 1) * MAP_UNIT);
+            glVertex2f(minimapPosX + x * MAP_UNIT, minimapPosY + SCREEN_HEIGHT - y * MAP_UNIT);
+            glVertex2f(minimapPosX + (x + 1) * MAP_UNIT, minimapPosY + SCREEN_HEIGHT - y * MAP_UNIT);
+            glVertex2f(minimapPosX + (x + 1) * MAP_UNIT, minimapPosY + SCREEN_HEIGHT - (y + 1) * MAP_UNIT);
+            glVertex2f(minimapPosX + x * MAP_UNIT, minimapPosY + SCREEN_HEIGHT - (y + 1) * MAP_UNIT);
             glEnd();
         }
 
     glColor3f(0.0f, 0.0f, 1.0f);
     glBegin(GL_LINES);
-    glVertex2f(player.getPos().x * MAP_UNIT, SCREEN_HEIGHT - player.getPos().y * MAP_UNIT);
-    glVertex2f((player.getPos().x + player.getDir().x) * MAP_UNIT,
-               SCREEN_HEIGHT - (player.getPos().y + player.getDir().y) * MAP_UNIT);
-    glVertex2f((player.getPos().x + player.getDir().x) * MAP_UNIT,
-               SCREEN_HEIGHT - (player.getPos().y + player.getDir().y) * MAP_UNIT);
-    glVertex2f((player.getPos().x + player.getDir().x * 0.8f + player.getPlane().x * 0.2f) * MAP_UNIT,
-               SCREEN_HEIGHT - (player.getPos().y + player.getDir().y * 0.8f + player.getPlane().y * 0.2f) * MAP_UNIT);
-    glVertex2f((player.getPos().x + player.getDir().x) * MAP_UNIT,
-               SCREEN_HEIGHT - (player.getPos().y + player.getDir().y) * MAP_UNIT);
-    glVertex2f((player.getPos().x + player.getDir().x * 0.8f - player.getPlane().x * 0.2f) * MAP_UNIT,
-               SCREEN_HEIGHT - (player.getPos().y + player.getDir().y * 0.8f - player.getPlane().y * 0.2f) * MAP_UNIT);
+    glVertex2f(minimapPosX + player.getPos().x * MAP_UNIT, minimapPosY + SCREEN_HEIGHT - player.getPos().y * MAP_UNIT);
+    glVertex2f(minimapPosX + (player.getPos().x + player.getDir().x) * MAP_UNIT,
+               minimapPosY + SCREEN_HEIGHT - (player.getPos().y + player.getDir().y) * MAP_UNIT);
+    glVertex2f(minimapPosX + (player.getPos().x + player.getDir().x) * MAP_UNIT,
+               minimapPosY + SCREEN_HEIGHT - (player.getPos().y + player.getDir().y) * MAP_UNIT);
+    glVertex2f(minimapPosX + (player.getPos().x + player.getDir().x * 0.8f + player.getPlane().x * 0.2f) * MAP_UNIT,
+               minimapPosY + SCREEN_HEIGHT -
+               (player.getPos().y + player.getDir().y * 0.8f + player.getPlane().y * 0.2f) * MAP_UNIT);
+    glVertex2f(minimapPosX + (player.getPos().x + player.getDir().x) * MAP_UNIT,
+               minimapPosY + SCREEN_HEIGHT - (player.getPos().y + player.getDir().y) * MAP_UNIT);
+    glVertex2f(minimapPosX + (player.getPos().x + player.getDir().x * 0.8f - player.getPlane().x * 0.2f) * MAP_UNIT,
+               minimapPosY + SCREEN_HEIGHT -
+               (player.getPos().y + player.getDir().y * 0.8f - player.getPlane().y * 0.2f) * MAP_UNIT);
     glEnd();
 
     glfwSwapBuffers(window);

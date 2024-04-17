@@ -4,7 +4,7 @@
 
 int main()
 {
-    Level level(10, 10);
+    Level level("tests/map.txt");
 
     Player player(level);
     Renderer renderer;

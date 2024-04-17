@@ -1,13 +1,16 @@
 #pragma once
 
+#include <iostream>
 #include <vector>
-#include <memory>
+#include <fstream>
+#include <sstream>
 
 enum class SectorType
 {
     EMPTY,
     WALL,
-    DOOR
+    DOOR,
+    SECTOR_TYPE_COUNT,
 };
 
 class Sector
@@ -25,19 +28,15 @@ private:
 class Level
 {
 public:
-    explicit Level(std::vector<std::vector<std::unique_ptr<Sector>>> sectors);
-    Level(size_t width, size_t height);
+    explicit Level(std::vector<std::vector<Sector>> sectors);
+    explicit Level(const std::string &filename);
 
     Sector &getSector(size_t x, size_t y);
     [[nodiscard]] const Sector &getSector(size_t x, size_t y) const;
-
-    [[nodiscard]] size_t getWidth() const;
-    [[nodiscard]] size_t getHeight() const;
 
     [[nodiscard]] size_t size() const;
     [[nodiscard]] size_t size(size_t i) const;
 
 private:
-    std::vector<std::vector<std::unique_ptr<Sector>>> sectors;
-    size_t width, height;
+    std::vector<std::vector<Sector>> sectors;
 };
