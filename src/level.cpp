@@ -1,10 +1,15 @@
 #include "include/level.h"
 
-Sector::Sector(SectorType t) : type(t) {}
+Sector::Sector(SectorType t) : type(t), flags(0) {}
 
 SectorType Sector::getType() const { return type; }
 void Sector::setType(SectorType t) { type = t; }
 
+bool Sector::getFlag(SectorFlags flag) const { return flags & static_cast<unsigned int>(flag); }
+void Sector::setFlag(SectorFlags flag) { flags |= static_cast<unsigned int>(flag); }
+void Sector::clearFlag(SectorFlags flag) { flags &= ~static_cast<unsigned int>(flag); }
+
+Level::Level() : sectors(0) {}
 Level::Level(std::vector<std::vector<Sector>> sectors) : sectors(std::move(sectors)) {}
 Level::Level(const std::string &filename)
 {
@@ -24,18 +29,40 @@ Level::Level(const std::string &filename)
 
         std::vector<Sector> row;
         std::istringstream iss(line);
-        std::string sector;
+        std::string token;
 
-        while (iss >> sector)
+        while (iss >> token)
         {
-            if (!std::all_of(sector.begin(), sector.end(), ::isdigit) || std::stoi(sector) < 0 ||
-                std::stoi(sector) >= static_cast<int>(SectorType::SECTOR_TYPE_COUNT))
+            if (std::stoi(token) < 0 || std::stoi(token) >= static_cast<int>(SectorType::SECTOR_TYPE_COUNT))
             {
-                std::cerr << "Invalid sector type: " << sector << std::endl;
+                std::cerr << "Invalid sector type: " << token << std::endl;
                 exit(EXIT_FAILURE);
             }
 
-            row.emplace_back(static_cast<SectorType>(std::stoi(sector)));
+            Sector sector(static_cast<SectorType>(std::stoi(token)));
+            if (token.find('_') != std::string::npos)
+                switch (sector.getType())
+                {
+                    case SectorType::DOOR:
+                    {
+                        std::string flags = token.substr(token.find('_') + 1);
+                        if (flags == "1") sector.setFlag(SectorFlags::IS_DOOR_OPEN);
+                        else if (flags == "0") sector.clearFlag(SectorFlags::IS_DOOR_OPEN);
+                        else
+                        {
+                            std::cerr << "Invalid door flag: " << flags << std::endl;
+                            exit(EXIT_FAILURE);
+                        }
+                        break;
+                    }
+                    default:
+                    {
+                        std::cerr << "Invalid flag for sector type: " << token << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
+                }
+
+            row.push_back(sector);
         }
 
         _sectors.push_back(row);
@@ -47,8 +74,9 @@ Level::Level(const std::string &filename)
         for (size_t y = 0; y < _sectors[x].size(); ++y) sectors[y][x] = _sectors[x][y];
 }
 
-Sector &Level::getSector(size_t x, size_t y) { return sectors[x][y]; }
+void Level::setSector(size_t x, size_t y, Sector sector) { sectors[x][y] = sector; }
 Sector Level::getSector(size_t x, size_t y) const { return sectors[x][y]; }
+std::vector<std::vector<Sector>> Level::getSectors() const { return sectors; }
 
 size_t Level::size() const { return sectors.size(); }
 size_t Level::size(size_t i) const { return sectors[i].size(); }

@@ -13,12 +13,12 @@ public:
     ~Renderer();
 
     void init();
-    void renderLevel(const Level &level, const Player &player);
-    void renderMinimap(const Level &level, const Player &player);
+    void renderLevel(const Player &player);
+    void renderMinimap(const Player &player);
 
     [[nodiscard]] GLFWwindow* getWindow() const;
 
 private:
     GLFWwindow* window;
-    static glm::vec3 getColor(SectorType type);
+    static glm::vec3 getColor(Sector sector);
 };

@@ -1,13 +1,13 @@
 #include "include/player.h"
 
-Player::Player(const Level &level) : level(level), position(), direction(-1, 0), plane(0, 0.66f)
+Player::Player() : position(), direction(-1, 0), plane(0, 0.66f)
 {
-    for (size_t x = 0; x < level.size(); ++x)
-        for (size_t y = 0; y < level.size(x); ++y)
-            if (level.getSector(x, y).getType() == SectorType::PLAYER_START)
+    for (size_t x = 0; x < level->size(); ++x)
+        for (size_t y = 0; y < level->size(x); ++y)
+            if (level->getSector(x, y).getType() == SectorType::PLAYER_START)
             {
                 position = {x + 0.5f, y + 0.5f};
-                level.getSector(x, y).setType(SectorType::EMPTY);
+                level->getSector(x, y).setType(SectorType::EMPTY);
 
                 return;
             }
@@ -19,6 +19,11 @@ Player::Player(const Level &level) : level(level), position(), direction(-1, 0),
 void Player::handleInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) glfwSetWindowShouldClose(window, GLFW_TRUE);
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !isInteracting)
+    {
+        interact();
+        isInteracting = true;
+    } else if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) isInteracting = false;
 
     handleFlags(window);
     handleMovement(window);
@@ -27,12 +32,13 @@ void Player::handleInput(GLFWwindow* window)
 const glm::vec2 &Player::getPos() const { return position; }
 const glm::vec2 &Player::getDir() const { return direction; }
 const glm::vec2 &Player::getPlane() const { return plane; }
-const FlagsManager &Player::getFlagsManager() const { return flagsManager; }
+const PlayerFlags &Player::getPlayerFlags() const { return playerFlags; }
 
 void Player::tryMove(float newX, float newY)
 {
-    auto blocked = {SectorType::WALL, SectorType::DOOR};
-    if (std::find(blocked.begin(), blocked.end(), level.getSector(newX, newY).getType()) == blocked.end())
+    if (level->getSector(newX, newY).getType() != SectorType::WALL ||
+        (level->getSector(newX, newY).getType() == SectorType::DOOR &&
+         level->getSector(newX, newY).getFlag(SectorFlags::IS_DOOR_OPEN)))
     {
         position.x = newX;
         position.y = newY;
@@ -50,6 +56,29 @@ void Player::rotate(float angle)
     plane.y = oldPlaneX * std::sin(angle) + plane.y * std::cos(angle);
 }
 
+void Player::interact() const
+{
+    size_t frontX = position.x + direction.x, frontY = position.y + direction.y;
+    Sector frontSector = level->getSector(frontX, frontY);
+
+    switch (frontSector.getType())
+    {
+        case SectorType::DOOR:
+        {
+            frontSector.getFlag(SectorFlags::IS_DOOR_OPEN) ? frontSector.clearFlag(SectorFlags::IS_DOOR_OPEN)
+                                                           : frontSector.setFlag(SectorFlags::IS_DOOR_OPEN);
+            frontSector.setType(SectorType::DOOR);
+
+            level->setSector(frontX, frontY, frontSector);
+            break;
+        }
+        default:
+        {
+            break;
+        }
+    }
+}
+
 void Player::handleFlags(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) isNoClipTriggered = false;
@@ -57,12 +86,12 @@ void Player::handleFlags(GLFWwindow* window)
 
     if (glfwGetKey(window, GLFW_KEY_N) == GLFW_RELEASE && !isNoClipTriggered)
     {
-        flagsManager.noClip = !flagsManager.noClip;
+        playerFlags.noClip = !playerFlags.noClip;
         isNoClipTriggered = true;
     }
     if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_RELEASE && !isMinimapTriggered)
     {
-        flagsManager.showMinimap = !flagsManager.showMinimap;
+        playerFlags.showMinimap = !playerFlags.showMinimap;
         isMinimapTriggered = true;
     }
 }
@@ -72,7 +101,7 @@ void Player::handleMovement(GLFWwindow* window)
     float moveSpeed = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ? 0.1f : 0.05f, rotSpeed = 0.05f;
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
     {
-        if (flagsManager.noClip)
+        if (playerFlags.noClip)
         {
             position.x += direction.x * moveSpeed;
             position.y += direction.y * moveSpeed;
@@ -84,7 +113,7 @@ void Player::handleMovement(GLFWwindow* window)
     }
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
     {
-        if (flagsManager.noClip)
+        if (playerFlags.noClip)
         {
             position.x -= direction.x * moveSpeed;
             position.y -= direction.y * moveSpeed;

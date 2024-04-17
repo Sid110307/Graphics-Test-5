@@ -28,7 +28,7 @@ void Renderer::init()
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow*, int width, int height) { glViewport(0, 0, width, height); });
 }
 
-void Renderer::renderLevel(const Level &level, const Player &player)
+void Renderer::renderLevel(const Player &player)
 {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -65,7 +65,7 @@ void Renderer::renderLevel(const Level &level, const Player &player)
             sideDistY = (mapY + 1.0f - player.getPos().y) * deltaDistY;
         }
 
-        while (hit == 0 && mapX < level.size() && mapY < level.size(0))
+        while (hit == 0 && mapX < level->size() && mapY < level->size(0))
         {
             if (sideDistX < sideDistY)
             {
@@ -79,12 +79,12 @@ void Renderer::renderLevel(const Level &level, const Player &player)
                 side = 1;
             }
 
-            if (mapX < level.size() && mapY < level.size(0) &&
-                level.getSector(mapX, mapY).getType() != SectorType::EMPTY)
+            if (mapX < level->size() && mapY < level->size(0) &&
+                level->getSector(mapX, mapY).getType() != SectorType::EMPTY)
                 hit = 1;
         }
 
-        if (mapX >= level.size() || mapY >= level.size(0))
+        if (mapX >= level->size() || mapY >= level->size(0))
         {
             glColor3f(0.0f, 0.0f, 0.0f);
             glBegin(GL_LINES);
@@ -100,7 +100,8 @@ void Renderer::renderLevel(const Level &level, const Player &player)
         int lineHeight = SCREEN_HEIGHT / perpWallDist, drawStart = std::max(0, -lineHeight / 2 + SCREEN_HEIGHT / 2),
             drawEnd = std::min(lineHeight / 2 + SCREEN_HEIGHT / 2, SCREEN_HEIGHT - 1);
 
-        glm::vec3 color = getColor(level.getSector(mapX, mapY).getType());
+        // TODO: Add door movement transition
+        glm::vec3 color = getColor(level->getSector(mapX, mapY));
 
         glColor3f(color.r, color.g, color.b);
         glBegin(GL_LINES);
@@ -112,7 +113,7 @@ void Renderer::renderLevel(const Level &level, const Player &player)
     glfwSwapBuffers(window);
 }
 
-void Renderer::renderMinimap(const Level &level, const Player &player)
+void Renderer::renderMinimap(const Player &player)
 {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -121,11 +122,11 @@ void Renderer::renderMinimap(const Level &level, const Player &player)
     glLoadIdentity();
     glClear(GL_COLOR_BUFFER_BIT);
 
-    float minimapPosX = (SCREEN_WIDTH - level.size() * MAP_UNIT) / 2, minimapPosY = -minimapPosX;
-    for (size_t x = 0; x < level.size(); ++x)
-        for (size_t y = 0; y < level.size(x); ++y)
+    float minimapPosX = (SCREEN_WIDTH - level->size() * MAP_UNIT) / 2, minimapPosY = -minimapPosX;
+    for (size_t x = 0; x < level->size(); ++x)
+        for (size_t y = 0; y < level->size(x); ++y)
         {
-            glm::vec3 color = getColor(level.getSector(x, y).getType());
+            glm::vec3 color = getColor(level->getSector(x, y));
 
             glColor3f(color.r, color.g, color.b);
             glBegin(GL_QUADS);
@@ -158,9 +159,9 @@ void Renderer::renderMinimap(const Level &level, const Player &player)
 
 GLFWwindow* Renderer::getWindow() const { return window; }
 
-glm::vec3 Renderer::getColor(SectorType type)
+glm::vec3 Renderer::getColor(Sector sector)
 {
-    switch (type)
+    switch (sector.getType())
     {
         case SectorType::EMPTY:
         case SectorType::PLAYER_START:
@@ -168,7 +169,8 @@ glm::vec3 Renderer::getColor(SectorType type)
         case SectorType::WALL:
             return {1.0f, 0.0f, 0.0f};
         case SectorType::DOOR:
-            return {0.0f, 1.0f, 0.0f};
+            return sector.getFlag(SectorFlags::IS_DOOR_OPEN) ? glm::vec3(0.0f, 0.5f, 0.5f)
+                                                             : glm::vec3(0.0f, 1.0f, 0.0f);
         default:
             return {1.0f, 0.0f, 1.0f};
     }

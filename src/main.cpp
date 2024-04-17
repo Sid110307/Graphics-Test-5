@@ -2,19 +2,18 @@
 #include "include/player.h"
 #include "include/renderer.h"
 
+Level* level = new Level("tests/map.txt");
+
 int main()
 {
-    Level level("tests/map.txt");
-
-    Player player(level);
+    Player player;
     Renderer renderer;
     renderer.init();
 
     while (!glfwWindowShouldClose(renderer.getWindow()))
     {
         player.handleInput(renderer.getWindow());
-        player.getFlagsManager().showMinimap ? renderer.renderMinimap(level, player)
-                                             : renderer.renderLevel(level, player);
+        player.getPlayerFlags().showMinimap ? renderer.renderMinimap(player) : renderer.renderLevel(player);
         glfwPollEvents();
     }
 
