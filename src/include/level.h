@@ -10,6 +10,7 @@ enum class SectorType
     EMPTY,
     WALL,
     DOOR,
+    PLAYER_START,
     SECTOR_TYPE_COUNT,
 };
 
@@ -32,7 +33,7 @@ public:
     explicit Level(const std::string &filename);
 
     Sector &getSector(size_t x, size_t y);
-    [[nodiscard]] const Sector &getSector(size_t x, size_t y) const;
+    [[nodiscard]] Sector getSector(size_t x, size_t y) const;
 
     [[nodiscard]] size_t size() const;
     [[nodiscard]] size_t size(size_t i) const;

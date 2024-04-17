@@ -95,28 +95,12 @@ void Renderer::renderLevel(const Level &level, const Player &player)
             continue;
         }
 
-        const Sector &currentSector = level.getSector(mapX, mapY);
         float perpWallDist = side == 0 ? (mapX - player.getPos().x + (1 - stepX) / 2) / rayDirX :
                              (mapY - player.getPos().y + (1 - stepY) / 2) / rayDirY;
         int lineHeight = SCREEN_HEIGHT / perpWallDist, drawStart = std::max(0, -lineHeight / 2 + SCREEN_HEIGHT / 2),
             drawEnd = std::min(lineHeight / 2 + SCREEN_HEIGHT / 2, SCREEN_HEIGHT - 1);
 
-        glm::vec3 color;
-        switch (currentSector.getType())
-        {
-            case SectorType::EMPTY:
-                color = glm::vec3(1.0f, 1.0f, 1.0f);
-                break;
-            case SectorType::WALL:
-                color = glm::vec3(1.0f, 0.0f, 0.0f);
-                break;
-            case SectorType::DOOR:
-                color = glm::vec3(0.0f, 1.0f, 0.0f);
-                break;
-            default:
-                color = glm::vec3(1.0f, 0.0f, 1.0f);
-                break;
-        }
+        glm::vec3 color = getColor(level.getSector(mapX, mapY).getType());
 
         glColor3f(color.r, color.g, color.b);
         glBegin(GL_LINES);
@@ -141,24 +125,7 @@ void Renderer::renderMinimap(const Level &level, const Player &player)
     for (size_t x = 0; x < level.size(); ++x)
         for (size_t y = 0; y < level.size(x); ++y)
         {
-            const Sector &sector = level.getSector(x, y);
-
-            glm::vec3 color;
-            switch (sector.getType())
-            {
-                case SectorType::EMPTY:
-                    color = glm::vec3(1.0f, 1.0f, 1.0f);
-                    break;
-                case SectorType::WALL:
-                    color = glm::vec3(1.0f, 0.0f, 0.0f);
-                    break;
-                case SectorType::DOOR:
-                    color = glm::vec3(0.0f, 1.0f, 0.0f);
-                    break;
-                default:
-                    color = glm::vec3(1.0f, 0.0f, 1.0f);
-                    break;
-            }
+            glm::vec3 color = getColor(level.getSector(x, y).getType());
 
             glColor3f(color.r, color.g, color.b);
             glBegin(GL_QUADS);
@@ -190,3 +157,19 @@ void Renderer::renderMinimap(const Level &level, const Player &player)
 }
 
 GLFWwindow* Renderer::getWindow() const { return window; }
+
+glm::vec3 Renderer::getColor(SectorType type)
+{
+    switch (type)
+    {
+        case SectorType::EMPTY:
+        case SectorType::PLAYER_START:
+            return {0.0f, 0.0f, 0.0f};
+        case SectorType::WALL:
+            return {1.0f, 0.0f, 0.0f};
+        case SectorType::DOOR:
+            return {0.0f, 1.0f, 0.0f};
+        default:
+            return {1.0f, 0.0f, 1.0f};
+    }
+}

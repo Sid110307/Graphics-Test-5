@@ -20,4 +20,5 @@ public:
 
 private:
     GLFWwindow* window;
+    static glm::vec3 getColor(SectorType type);
 };

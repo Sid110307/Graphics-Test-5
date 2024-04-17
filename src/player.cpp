@@ -1,6 +1,20 @@
 #include "include/player.h"
 
-Player::Player(const Level &level) : level(level), position(1.5f, 1.5f), direction(-1.0f, 0.0f), plane(0.0f, 0.66f) {}
+Player::Player(const Level &level) : level(level), position(), direction(-1, 0), plane(0, 0.66f)
+{
+    for (size_t x = 0; x < level.size(); ++x)
+        for (size_t y = 0; y < level.size(x); ++y)
+            if (level.getSector(x, y).getType() == SectorType::PLAYER_START)
+            {
+                position = {x + 0.5f, y + 0.5f};
+                level.getSector(x, y).setType(SectorType::EMPTY);
+
+                return;
+            }
+
+    std::cerr << "Player start position not found!" << std::endl;
+    exit(EXIT_FAILURE);
+}
 
 void Player::handleInput(GLFWwindow* window)
 {
@@ -17,7 +31,8 @@ const FlagsManager &Player::getFlagsManager() const { return flagsManager; }
 
 void Player::tryMove(float newX, float newY)
 {
-    if (level.getSector(newX, newY).getType() == SectorType::EMPTY)
+    auto blocked = {SectorType::WALL, SectorType::DOOR};
+    if (std::find(blocked.begin(), blocked.end(), level.getSector(newX, newY).getType()) == blocked.end())
     {
         position.x = newX;
         position.y = newY;
