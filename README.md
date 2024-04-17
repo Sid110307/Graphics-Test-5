@@ -4,7 +4,6 @@
 
 ## TODO
 
-- No-clip flag
 - Door handling
 - Key handling
 - Switches and triggers
