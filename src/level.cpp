@@ -1,26 +1,28 @@
 #include "include/level.h"
 
-Level::Level(size_t width, size_t height) : width(width), height(height), data(width * height, ELEMENT::EMPTY) {}
+Sector::Sector(SectorType t) : type(t) {}
 
-ELEMENT Level::at(size_t x, size_t y) const { return data.at(y * width + x); }
-ELEMENT &Level::at(size_t x, size_t y) { return data.at(y * width + x); }
+SectorType Sector::getType() const { return type; }
+void Sector::setType(SectorType t) { type = t; }
 
-size_t Level::size() const { return width; }
-size_t Level::size(size_t) const { return height; }
+Level::Level(std::vector<std::vector<std::unique_ptr<Sector>>> sectors)
+    : sectors(std::move(sectors)), width(this->sectors.size()), height(this->sectors[0].size()) {}
 
-Level Level::generateLevel()
+Level::Level(size_t width, size_t height) : width(width), height(height)
 {
+    sectors.resize(width);
     for (size_t x = 0; x < width; ++x)
     {
-        at(x, 0) = ELEMENT::WALL;
-        at(x, height - 1) = ELEMENT::WALL;
+        sectors[x].resize(height);
+        for (size_t y = 0; y < height; ++y) sectors[x][y] = std::make_unique<Sector>();
     }
-    for (size_t y = 0; y < height; ++y)
-    {
-        at(0, y) = ELEMENT::WALL;
-        at(width - 1, y) = ELEMENT::WALL;
-    }
-
-    at(width / 2, height / 2) = ELEMENT::DOOR;
-    return *this;
 }
+
+Sector &Level::getSector(size_t x, size_t y) { return *sectors[x][y]; }
+const Sector &Level::getSector(size_t x, size_t y) const { return *sectors[x][y]; }
+
+size_t Level::getWidth() const { return width; }
+size_t Level::getHeight() const { return height; }
+
+size_t Level::size() const { return sectors.size(); }
+size_t Level::size(size_t i) const { return sectors[i].size(); }

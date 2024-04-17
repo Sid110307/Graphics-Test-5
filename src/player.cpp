@@ -17,7 +17,7 @@ const FlagsManager &Player::getFlagsManager() const { return flagsManager; }
 
 void Player::tryMove(float newX, float newY)
 {
-    if (level.at(newX, newY) == ELEMENT::EMPTY)
+    if (level.getSector(newX, newY).getType() == SectorType::EMPTY)
     {
         position.x = newX;
         position.y = newY;

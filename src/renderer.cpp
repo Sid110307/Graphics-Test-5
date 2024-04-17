@@ -79,7 +79,9 @@ void Renderer::renderLevel(const Level &level, const Player &player)
                 side = 1;
             }
 
-            if (mapX < level.size() && mapY < level.size(0) && level.at(mapX, mapY) != ELEMENT::EMPTY) hit = 1;
+            if (mapX < level.size() && mapY < level.size(0) &&
+                level.getSector(mapX, mapY).getType() != SectorType::EMPTY)
+                hit = 1;
         }
 
         if (mapX >= level.size() || mapY >= level.size(0))
@@ -99,12 +101,15 @@ void Renderer::renderLevel(const Level &level, const Player &player)
             drawEnd = std::min(lineHeight / 2 + SCREEN_HEIGHT / 2, SCREEN_HEIGHT - 1);
 
         glm::vec3 color;
-        switch (level.at(mapX, mapY))
+        switch (level.getSector(mapX, mapY).getType())
         {
-            case ELEMENT::WALL:
+            case SectorType::EMPTY:
+                color = glm::vec3(1.0f, 1.0f, 1.0f);
+                break;
+            case SectorType::WALL:
                 color = glm::vec3(1.0f, 0.0f, 0.0f);
                 break;
-            case ELEMENT::DOOR:
+            case SectorType::DOOR:
                 color = glm::vec3(0.0f, 1.0f, 0.0f);
                 break;
             default:
@@ -135,12 +140,15 @@ void Renderer::renderMinimap(const Level &level, const Player &player)
         for (size_t y = 0; y < level.size(0); ++y)
         {
             glm::vec3 color;
-            switch (level.at(x, y))
+            switch (level.getSector(x, y).getType())
             {
-                case ELEMENT::WALL:
+                case SectorType::EMPTY:
+                    color = glm::vec3(1.0f, 1.0f, 1.0f);
+                    break;
+                case SectorType::WALL:
                     color = glm::vec3(1.0f, 0.0f, 0.0f);
                     break;
-                case ELEMENT::DOOR:
+                case SectorType::DOOR:
                     color = glm::vec3(0.0f, 1.0f, 0.0f);
                     break;
                 default:

@@ -4,8 +4,7 @@
 
 int main()
 {
-    Level level(20, 20);
-    level.generateLevel();
+    Level level(10, 10);
 
     Player player(level);
     Renderer renderer;
