@@ -1,10 +1,8 @@
 #pragma once
 
-#include <iostream>
-#include <GLFW/glfw3.h>
-
 #include "level.h"
 #include "player.h"
+#include "utils.h"
 
 class Renderer
 {

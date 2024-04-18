@@ -24,7 +24,7 @@ public:
     [[nodiscard]] const PlayerFlags &getPlayerFlags() const;
 
 private:
-    void tryMove(float newX, float newY);
+    void move(float newX, float newY);
     void rotate(float angle);
     void interact() const;
     void handleFlags(GLFWwindow* window);

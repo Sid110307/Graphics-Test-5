@@ -100,7 +100,6 @@ void Renderer::renderLevel(const Player &player)
         int lineHeight = SCREEN_HEIGHT / perpWallDist, drawStart = std::max(0, -lineHeight / 2 + SCREEN_HEIGHT / 2),
             drawEnd = std::min(lineHeight / 2 + SCREEN_HEIGHT / 2, SCREEN_HEIGHT - 1);
 
-        // TODO: Add door movement transition
         glm::vec3 color = getColor(level->getSector(mapX, mapY));
 
         glColor3f(color.r, color.g, color.b);

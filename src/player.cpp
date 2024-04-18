@@ -12,8 +12,7 @@ Player::Player() : position(), direction(-1, 0), plane(0, 0.66f)
                 return;
             }
 
-    std::cerr << "Player start position not found!" << std::endl;
-    exit(EXIT_FAILURE);
+    std::cerr << "Player start position not found! Defaulting to (0, 0)." << std::endl;
 }
 
 void Player::handleInput(GLFWwindow* window)
@@ -34,11 +33,10 @@ const glm::vec2 &Player::getDir() const { return direction; }
 const glm::vec2 &Player::getPlane() const { return plane; }
 const PlayerFlags &Player::getPlayerFlags() const { return playerFlags; }
 
-void Player::tryMove(float newX, float newY)
+void Player::move(float newX, float newY)
 {
-    if (level->getSector(newX, newY).getType() != SectorType::WALL ||
-        (level->getSector(newX, newY).getType() == SectorType::DOOR &&
-         level->getSector(newX, newY).getFlag(SectorFlags::IS_DOOR_OPEN)))
+    Sector sector = level->getSector(newX, newY);
+    if (sector.getType() != SectorType::WALL || sector.getFlag(SectorFlags::IS_DOOR_OPEN) || playerFlags.noClip)
     {
         position.x = newX;
         position.y = newY;
@@ -67,9 +65,8 @@ void Player::interact() const
         {
             frontSector.getFlag(SectorFlags::IS_DOOR_OPEN) ? frontSector.clearFlag(SectorFlags::IS_DOOR_OPEN)
                                                            : frontSector.setFlag(SectorFlags::IS_DOOR_OPEN);
-            frontSector.setType(SectorType::DOOR);
-
             level->setSector(frontX, frontY, frontSector);
+
             break;
         }
         default:
@@ -101,27 +98,13 @@ void Player::handleMovement(GLFWwindow* window)
     float moveSpeed = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ? 0.1f : 0.05f, rotSpeed = 0.05f;
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
     {
-        if (playerFlags.noClip)
-        {
-            position.x += direction.x * moveSpeed;
-            position.y += direction.y * moveSpeed;
-        } else
-        {
-            tryMove(position.x + direction.x * moveSpeed, position.y);
-            tryMove(position.x, position.y + direction.y * moveSpeed);
-        }
+        move(position.x + direction.x * moveSpeed, position.y);
+        move(position.x, position.y + direction.y * moveSpeed);
     }
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
     {
-        if (playerFlags.noClip)
-        {
-            position.x -= direction.x * moveSpeed;
-            position.y -= direction.y * moveSpeed;
-        } else
-        {
-            tryMove(position.x - direction.x * moveSpeed, position.y);
-            tryMove(position.x, position.y - direction.y * moveSpeed);
-        }
+        move(position.x - direction.x * moveSpeed, position.y);
+        move(position.x, position.y - direction.y * moveSpeed);
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) rotate(rotSpeed);
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) rotate(-rotSpeed);

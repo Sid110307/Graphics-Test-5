@@ -1,6 +1,6 @@
-#include "include/level.h"
-#include "include/player.h"
 #include "include/renderer.h"
+#include "include/player.h"
+#include "include/level.h"
 
 Level* level = new Level("tests/map.txt");
 

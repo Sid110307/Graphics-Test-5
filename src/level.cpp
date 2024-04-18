@@ -36,7 +36,7 @@ Level::Level(const std::string &filename)
             if (std::stoi(token) < 0 || std::stoi(token) >= static_cast<int>(SectorType::SECTOR_TYPE_COUNT))
             {
                 std::cerr << "Invalid sector type: " << token << std::endl;
-                exit(EXIT_FAILURE);
+                continue;
             }
 
             Sector sector(static_cast<SectorType>(std::stoi(token)));
@@ -51,14 +51,14 @@ Level::Level(const std::string &filename)
                         else
                         {
                             std::cerr << "Invalid door flag: " << flags << std::endl;
-                            exit(EXIT_FAILURE);
+                            continue;
                         }
                         break;
                     }
                     default:
                     {
                         std::cerr << "Invalid flag for sector type: " << token << std::endl;
-                        exit(EXIT_FAILURE);
+                        continue;
                     }
                 }
 
