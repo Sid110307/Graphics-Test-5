@@ -36,7 +36,7 @@ const PlayerFlags &Player::getPlayerFlags() const { return playerFlags; }
 void Player::move(float newX, float newY)
 {
     Sector sector = level->getSector(newX, newY);
-    if (sector.getType() != SectorType::WALL || sector.getFlag(SectorFlags::IS_DOOR_OPEN) || playerFlags.noClip)
+    if (sector.getType() != SectorType::WALL && sector.getType() != SectorType::DOOR)
     {
         position.x = newX;
         position.y = newY;
@@ -63,8 +63,7 @@ void Player::interact() const
     {
         case SectorType::DOOR:
         {
-            frontSector.getFlag(SectorFlags::IS_DOOR_OPEN) ? frontSector.clearFlag(SectorFlags::IS_DOOR_OPEN)
-                                                           : frontSector.setFlag(SectorFlags::IS_DOOR_OPEN);
+            frontSector.setType(SectorType::EMPTY);
             level->setSector(frontX, frontY, frontSector);
 
             break;
@@ -96,15 +95,22 @@ void Player::handleFlags(GLFWwindow* window)
 void Player::handleMovement(GLFWwindow* window)
 {
     float moveSpeed = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ? 0.1f : 0.05f, rotSpeed = 0.05f;
+
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
     {
-        move(position.x + direction.x * moveSpeed, position.y);
-        move(position.x, position.y + direction.y * moveSpeed);
+        if (playerFlags.noClip)
+        {
+            position.x += direction.x * moveSpeed;
+            position.y += direction.y * moveSpeed;
+        } else move(position.x + direction.x * moveSpeed, position.y + direction.y * moveSpeed);
     }
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
     {
-        move(position.x - direction.x * moveSpeed, position.y);
-        move(position.x, position.y - direction.y * moveSpeed);
+        if (playerFlags.noClip)
+        {
+            position.x -= direction.x * moveSpeed;
+            position.y -= direction.y * moveSpeed;
+        } else move(position.x - direction.x * moveSpeed, position.y - direction.y * moveSpeed);
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) rotate(rotSpeed);
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) rotate(-rotSpeed);

@@ -1,13 +1,9 @@
 #include "include/level.h"
 
-Sector::Sector(SectorType t) : type(t), flags(0) {}
+Sector::Sector(SectorType t) : type(t) {}
 
 SectorType Sector::getType() const { return type; }
 void Sector::setType(SectorType t) { type = t; }
-
-bool Sector::getFlag(SectorFlags flag) const { return flags & static_cast<unsigned int>(flag); }
-void Sector::setFlag(SectorFlags flag) { flags |= static_cast<unsigned int>(flag); }
-void Sector::clearFlag(SectorFlags flag) { flags &= ~static_cast<unsigned int>(flag); }
 
 Level::Level() : sectors(0) {}
 Level::Level(std::vector<std::vector<Sector>> sectors) : sectors(std::move(sectors)) {}
@@ -39,30 +35,7 @@ Level::Level(const std::string &filename)
                 continue;
             }
 
-            Sector sector(static_cast<SectorType>(std::stoi(token)));
-            if (token.find('_') != std::string::npos)
-                switch (sector.getType())
-                {
-                    case SectorType::DOOR:
-                    {
-                        std::string flags = token.substr(token.find('_') + 1);
-                        if (flags == "1") sector.setFlag(SectorFlags::IS_DOOR_OPEN);
-                        else if (flags == "0") sector.clearFlag(SectorFlags::IS_DOOR_OPEN);
-                        else
-                        {
-                            std::cerr << "Invalid door flag: " << flags << std::endl;
-                            continue;
-                        }
-                        break;
-                    }
-                    default:
-                    {
-                        std::cerr << "Invalid flag for sector type: " << token << std::endl;
-                        continue;
-                    }
-                }
-
-            row.push_back(sector);
+            row.emplace_back(static_cast<SectorType>(std::stoi(token)));
         }
 
         _sectors.push_back(row);

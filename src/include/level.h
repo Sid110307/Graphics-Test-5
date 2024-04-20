@@ -14,11 +14,6 @@ enum class SectorType
     SECTOR_TYPE_COUNT,
 };
 
-enum class SectorFlags
-{
-    IS_DOOR_OPEN = 1,
-};
-
 class Sector
 {
 public:
@@ -27,13 +22,8 @@ public:
     [[nodiscard]] SectorType getType() const;
     void setType(SectorType t);
 
-    [[nodiscard]] bool getFlag(SectorFlags flag) const;
-    void setFlag(SectorFlags flag);
-    void clearFlag(SectorFlags flag);
-
 private:
     SectorType type;
-    unsigned int flags;
 };
 
 class Level

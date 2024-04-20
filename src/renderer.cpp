@@ -30,13 +30,7 @@ void Renderer::init()
 
 void Renderer::renderLevel(const Player &player)
 {
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, -1);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glClear(GL_COLOR_BUFFER_BIT);
-
+    setupViewport();
     for (size_t x = 0; x < static_cast<size_t>(SCREEN_WIDTH); ++x)
     {
         float cameraX = 2.0f * x / SCREEN_WIDTH - 1,
@@ -114,13 +108,7 @@ void Renderer::renderLevel(const Player &player)
 
 void Renderer::renderMinimap(const Player &player)
 {
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, -1);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glClear(GL_COLOR_BUFFER_BIT);
-
+    setupViewport();
     float minimapPosX = (SCREEN_WIDTH - level->size() * MAP_UNIT) / 2, minimapPosY = -minimapPosX;
     for (size_t x = 0; x < level->size(); ++x)
         for (size_t y = 0; y < level->size(x); ++y)
@@ -168,9 +156,18 @@ glm::vec3 Renderer::getColor(Sector sector)
         case SectorType::WALL:
             return {1.0f, 0.0f, 0.0f};
         case SectorType::DOOR:
-            return sector.getFlag(SectorFlags::IS_DOOR_OPEN) ? glm::vec3(0.0f, 0.5f, 0.5f)
-                                                             : glm::vec3(0.0f, 1.0f, 0.0f);
+            return {0.0f, 1.0f, 0.0f};
         default:
             return {1.0f, 0.0f, 1.0f};
     }
+}
+
+void Renderer::setupViewport()
+{
+    glClear(GL_COLOR_BUFFER_BIT);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 1, -1);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 }
