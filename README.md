@@ -2,28 +2,18 @@
 
 > Raycasting engine test with OpenGL and GLFW.
 
-## TODO
+## Controls
 
-- Door handling
-- Key handling
-- Switches and triggers
-- Enemy AI
-- Level map file loading
-- Weapon handling
-- HUD
-- Sound
-- Lighting
-- Textures
-- Skybox
-- Game state machine
-- Game loop
-- Level transitions
-- Main menu
-- Settings menu
-- Credits
-- Save/Load game
-- Cheats
-- Level editor
+- `W` or `↑` to move forward.
+- `S` or `↓` to move backward.
+- `←` to turn left.
+- `→` to turn right.
+- `A` to strafe left.
+- `D` to strafe right.
+- `n` to toggle no-clip mode.
+- `Tab` to toggle map.
+- `Space` to interact.
+- `Esc` to exit.
 
 ## License
 

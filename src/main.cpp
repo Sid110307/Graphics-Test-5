@@ -1,3 +1,5 @@
+#define STB_IMAGE_IMPLEMENTATION
+
 #include "include/renderer.h"
 #include "include/player.h"
 #include "include/level.h"
@@ -8,7 +10,6 @@ int main()
 {
     Player player;
     Renderer renderer;
-    renderer.init();
 
     while (!glfwWindowShouldClose(renderer.getWindow()))
     {

@@ -36,11 +36,39 @@ const PlayerFlags &Player::getPlayerFlags() const { return playerFlags; }
 void Player::move(float newX, float newY)
 {
     Sector sector = level->getSector(newX, newY);
-    if (sector.getType() != SectorType::WALL && sector.getType() != SectorType::DOOR)
+    std::vector<SectorType> wallTypes = {SectorType::WALL, SectorType::DOOR, SectorType::DOOR_LOCKED1,
+                                         SectorType::DOOR_LOCKED2, SectorType::DOOR_LOCKED3, SectorType::DOOR_LOCKED4};
+
+    if (std::find(wallTypes.begin(), wallTypes.end(), sector.getType()) == wallTypes.end())
     {
         position.x = newX;
         position.y = newY;
     }
+
+    for (size_t i = 0; i < level->getObjects().size(); ++i)
+        if (static_cast<size_t>(level->getObject(i).getX()) == static_cast<size_t>(newX) &&
+            static_cast<size_t>(level->getObject(i).getY()) == static_cast<size_t>(newY))
+        {
+            switch (level->getObject(i).getType())
+            {
+                case ObjectType::KEY1:
+                    playerFlags.hasKey1 = true;
+                    break;
+                case ObjectType::KEY2:
+                    playerFlags.hasKey2 = true;
+                    break;
+                case ObjectType::KEY3:
+                    playerFlags.hasKey3 = true;
+                    break;
+                case ObjectType::KEY4:
+                    playerFlags.hasKey4 = true;
+                    break;
+                default:
+                    break;
+            }
+
+            level->removeObject(i);
+        }
 }
 
 void Player::rotate(float angle)
@@ -65,6 +93,46 @@ void Player::interact() const
         {
             frontSector.setType(SectorType::EMPTY);
             level->setSector(frontX, frontY, frontSector);
+
+            break;
+        }
+        case SectorType::DOOR_LOCKED1:
+        {
+            if (playerFlags.hasKey1)
+            {
+                frontSector.setType(SectorType::EMPTY);
+                level->setSector(frontX, frontY, frontSector);
+            }
+
+            break;
+        }
+        case SectorType::DOOR_LOCKED2:
+        {
+            if (playerFlags.hasKey2)
+            {
+                frontSector.setType(SectorType::EMPTY);
+                level->setSector(frontX, frontY, frontSector);
+            }
+
+            break;
+        }
+        case SectorType::DOOR_LOCKED3:
+        {
+            if (playerFlags.hasKey3)
+            {
+                frontSector.setType(SectorType::EMPTY);
+                level->setSector(frontX, frontY, frontSector);
+            }
+
+            break;
+        }
+        case SectorType::DOOR_LOCKED4:
+        {
+            if (playerFlags.hasKey4)
+            {
+                frontSector.setType(SectorType::EMPTY);
+                level->setSector(frontX, frontY, frontSector);
+            }
 
             break;
         }
@@ -96,7 +164,7 @@ void Player::handleMovement(GLFWwindow* window)
 {
     float moveSpeed = glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ? 0.1f : 0.05f, rotSpeed = 0.05f;
 
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
         if (playerFlags.noClip)
         {
@@ -104,13 +172,29 @@ void Player::handleMovement(GLFWwindow* window)
             position.y += direction.y * moveSpeed;
         } else move(position.x + direction.x * moveSpeed, position.y + direction.y * moveSpeed);
     }
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
         if (playerFlags.noClip)
         {
             position.x -= direction.x * moveSpeed;
             position.y -= direction.y * moveSpeed;
         } else move(position.x - direction.x * moveSpeed, position.y - direction.y * moveSpeed);
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        if (playerFlags.noClip)
+        {
+            position.x -= direction.y * moveSpeed;
+            position.y += direction.x * moveSpeed;
+        } else move(position.x - direction.y * moveSpeed, position.y + direction.x * moveSpeed);
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        if (playerFlags.noClip)
+        {
+            position.x += direction.y * moveSpeed;
+            position.y -= direction.x * moveSpeed;
+        } else move(position.x + direction.y * moveSpeed, position.y - direction.x * moveSpeed);
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) rotate(rotSpeed);
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) rotate(-rotSpeed);

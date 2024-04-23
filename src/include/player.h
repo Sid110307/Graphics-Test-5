@@ -10,6 +10,10 @@ struct PlayerFlags
 {
     bool noClip = false;
     bool showMinimap = false;
+    bool hasKey1 = false;
+    bool hasKey2 = false;
+    bool hasKey3 = false;
+    bool hasKey4 = false;
 };
 
 class Player

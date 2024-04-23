@@ -5,6 +5,16 @@ Sector::Sector(SectorType t) : type(t) {}
 SectorType Sector::getType() const { return type; }
 void Sector::setType(SectorType t) { type = t; }
 
+Object::Object(ObjectType t, float x, float y) : type(t), x(x), y(y) {}
+
+ObjectType Object::getType() const { return type; }
+float Object::getX() const { return x; }
+float Object::getY() const { return y; }
+
+void Object::setType(ObjectType t) { type = t; }
+void Object::setX(float _x) { x = _x; }
+void Object::setY(float _y) { y = _y; }
+
 Level::Level() : sectors(0) {}
 Level::Level(std::vector<std::vector<Sector>> sectors) : sectors(std::move(sectors)) {}
 Level::Level(const std::string &filename)
@@ -16,40 +26,57 @@ Level::Level(const std::string &filename)
         exit(EXIT_FAILURE);
     }
 
-    std::vector<std::vector<Sector>> _sectors;
     std::string line;
-
     while (std::getline(file, line))
     {
         if (line.empty() || line[0] == '#') continue;
 
-        std::vector<Sector> row;
+        std::vector<Sector> sectorRow;
         std::istringstream iss(line);
         std::string token;
 
         while (iss >> token)
         {
-            if (std::stoi(token) < 0 || std::stoi(token) >= static_cast<int>(SectorType::SECTOR_TYPE_COUNT))
+            if (token[0] == 'S')
             {
-                std::cerr << "Invalid sector type: " << token << std::endl;
+                token = token.substr(1);
+                if (std::stoi(token) < 0 || std::stoi(token) >= static_cast<int>(SectorType::SECTOR_TYPE_COUNT))
+                {
+                    std::cerr << "Invalid sector type: " << token << std::endl;
+                    continue;
+                }
+
+                sectorRow.emplace_back(static_cast<SectorType>(std::stoi(token)));
+            } else if (token[0] == 'O')
+            {
+                token = token.substr(1);
+                if (std::stoi(token) < 0 || std::stoi(token) >= static_cast<int>(ObjectType::OBJECT_TYPE_COUNT))
+                {
+                    std::cerr << "Invalid object type: " << token << std::endl;
+                    continue;
+                }
+
+                sectorRow.emplace_back(SectorType::EMPTY);
+                objects.emplace_back(static_cast<ObjectType>(std::stoi(token)), sectorRow.size() - 1, sectors.size());
+            } else
+            {
+                std::cerr << "Invalid token: " << token << std::endl;
                 continue;
             }
-
-            row.emplace_back(static_cast<SectorType>(std::stoi(token)));
         }
 
-        _sectors.push_back(row);
+        sectors.push_back(sectorRow);
     }
-
-    std::reverse(_sectors.begin(), _sectors.end());
-    sectors.resize(_sectors[0].size(), std::vector<Sector>(_sectors.size()));
-    for (size_t x = 0; x < _sectors.size(); ++x)
-        for (size_t y = 0; y < _sectors[x].size(); ++y) sectors[y][x] = _sectors[x][y];
 }
 
 void Level::setSector(size_t x, size_t y, Sector sector) { sectors[x][y] = sector; }
 Sector Level::getSector(size_t x, size_t y) const { return sectors[x][y]; }
 std::vector<std::vector<Sector>> Level::getSectors() const { return sectors; }
+
+void Level::setObject(Object object) { objects.push_back(object); }
+void Level::removeObject(size_t i) { objects.erase(objects.begin() + i); }
+Object Level::getObject(size_t i) const { return objects[i]; }
+std::vector<Object> Level::getObjects() const { return objects; }
 
 size_t Level::size() const { return sectors.size(); }
 size_t Level::size(size_t i) const { return sectors[i].size(); }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stb/stb_image.h>
+
 #include "level.h"
 #include "player.h"
 #include "utils.h"
@@ -10,7 +12,6 @@ public:
     Renderer();
     ~Renderer();
 
-    void init();
     void renderLevel(const Player &player);
     void renderMinimap(const Player &player);
 
@@ -18,7 +19,11 @@ public:
 
 private:
     GLFWwindow* window;
+    float* zBuffer;
+    unsigned char* textures[static_cast<int>(ObjectType::OBJECT_TYPE_COUNT)] = {nullptr};
 
-    static glm::vec3 getColor(Sector sector);
+    static glm::vec3 getColor(SectorType sectorType);
+    static glm::vec3 getColor(ObjectType type);
+
     static void setupViewport();
 };
