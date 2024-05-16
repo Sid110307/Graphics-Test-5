@@ -166,7 +166,7 @@ void Renderer::renderLevel(const Player &player)
 void Renderer::renderMinimap(const Player &player)
 {
     setupViewport();
-    float minimapPosX = (SCREEN_WIDTH - level->size() * MAP_UNIT) / 2, minimapPosY = -minimapPosX;
+    float minimapPosX = (SCREEN_WIDTH - level->size() * MAP_UNIT) / 2, minimapPosY = 0;
     for (size_t x = 0; x < level->size(); ++x)
         for (size_t y = 0; y < level->size(x); ++y)
         {
